@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+@import "giphyStyle.css";
+<html lang="en">
+
+	<head>
+		
+		<title>Jeremy Roland - Going for a drive.</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+			body {
+				font-family: Monospace;
+				background: url(textures/giphy.gif) repeat-y center center fixed;
+				background-size: cover;
+				margin: 0px;
+				overflow: hidden;
+
+			}
+
+		</style>
+		 <script src="three.js"></script>
+	</head>
+		
+		<script src="three.min.js"></script>
+		<script src="../examples/js/loaders/OBJLoader.js"></script>
+		
+		<script src="../examples/js/shaders/BleachBypassShader.js"></script>
+		<script src="../examples/js/shaders/ColorCorrectionShader.js"></script>
+		<script src="../examples/js/shaders/CopyShader.js"></script>
+		<script src="../examples/js/shaders/FXAAShader.js"></script>
+
+		<script src="../examples/js/postprocessing/EffectComposer.js"></script>
+		<script src="../examples/js/postprocessing/RenderPass.js"></script>
+		<script src="../examples/js/postprocessing/ShaderPass.js"></script>
+		<script src="../examples/js/postprocessing/MaskPass.js"></script>
+
+		<script>			
+		
+			var loadedObject = null;
+			
+			var container;
+			
+			var composer, effectFXAA;
+
+			var camera, scene, renderer;
+
+			var mouseX = 0, mouseY = 0;
+
+			var windowHalfX = window.innerWidth / 2;
+			var windowHalfY = window.innerHeight / 2;
+			
+			var xAxis = new THREE.Vector3(0,1,0);
+
+			play();
+			init();
+			animate();
+
+			function init() {
+
+
+
+				container = document.createElement( 'div' );
+				document.body.appendChild( container );
+
+				//Camera
+				
+				camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 2000 );
+				camera.position.z = 100;
+
+				//Scene
+
+				scene = new THREE.Scene();
+
+				//Lights
+				
+
+				var ambient = new THREE.AmbientLight( 0x101030 );
+				scene.add( ambient );
+
+				var directionalLight = new THREE.DirectionalLight( 0xffbbbb, 10);
+				directionalLight.position.set( 1, 1, 1 );
+
+				scene.add( directionalLight );
+				
+				var rimLight = new THREE.DirectionalLight( 0xcce6ff, 25);
+				rimLight.position.set( 0, 0.5, -10 );
+				
+				scene.add( rimLight );
+
+				var fillerLight = new THREE.DirectionalLight( 0x119c8e, 10);
+				fillerLight.position.set( -1, 1, 0 );
+
+				scene.add( fillerLight );
+
+				
+				//Material
+				
+				var material = new THREE.MeshPhongMaterial( {
+					color: 0x000000,
+					specular: 0x111111,
+					shininess: 10,
+					map: THREE.ImageUtils.loadTexture( "textures/SteeringWheel.jpg" ),
+					specularMap: THREE.ImageUtils.loadTexture( "textures/SteeringWheel.jpg" ),
+					normalMap: THREE.ImageUtils.loadTexture( "textures/SteeringWheel_NM.jpg" ),
+					normalScale: new THREE.Vector2( 1, 1 ),
+					wrapRGB: new THREE.Vector3( 0.575, 0.5, 0.5 ),
+					wrapAround: true
+				} );
+				
+				    var materialLine = new THREE.LineBasicMaterial({
+					color: 0x0000ff
+				});
+
+				//Texture
+
+				var manager = new THREE.LoadingManager();
+				manager.onProgress = function ( item, loaded, total ) {
+
+					console.log( item, loaded, total );
+
+				};
+
+//				var texture = new THREE.Texture();
+
+				var onProgress = function ( xhr ) {
+					if ( xhr.lengthComputable ) {
+						var percentComplete = xhr.loaded / xhr.total * 100;
+						console.log( Math.round(percentComplete, 2) + '% downloaded' );
+					}
+				};
+
+				var onError = function ( xhr ) {
+				
+				};
+
+
+				var loader = new THREE.ImageLoader( manager );
+				loader.load( 'textures/SteeringWheel.jpg', function ( image ) {
+
+					texture.image = image;
+					texture.needsUpdate = true;
+
+				} );
+				
+
+				//Model
+
+				var loader = new THREE.OBJLoader( manager );
+				loader.load( 'obj/SteeringWheelOBJ.obj', function ( object ) {
+
+					object.traverse( function ( child ) {
+
+						if ( child instanceof THREE.Mesh ) {
+
+							child.material = material;
+
+						}
+
+					} );
+						object.material = material;
+						object.position.y = -37;
+						object.position.x = -33;
+						// object.position.x = -45;
+						//object.rotation.y = Math.PI / 180;
+
+						object.rotation.x = Math.PI / 180 - .5;
+						loadedObject = object;
+						scene.add( object );
+
+					}, onProgress, onError );
+
+				
+				renderer = new THREE.WebGLRenderer( { alpha: true });
+				renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				container.appendChild( renderer.domElement );
+
+				document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+
+				//
+
+				window.addEventListener( 'resize', onWindowResize, false );
+
+			}
+
+			function onWindowResize() {
+
+				windowHalfX = window.innerWidth / 2;
+				windowHalfY = window.innerHeight / 2;
+
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+
+				renderer.setSize( window.innerWidth, window.innerHeight );
+
+			}
+
+			function onDocumentMouseMove( event ) {
+
+				mouseX = ( event.clientX - windowHalfX ) / 2;
+				mouseY = ( event.clientY - windowHalfY ) / 2;
+
+			}
+
+			//
+
+			function animate() {
+
+				requestAnimationFrame( animate );
+				render();
+
+			}
+
+			
+			
+			function render() {
+				//camera.position.x = ( mouseX - camera.position.x ) * .1;
+			
+				//loadedObject.position.y = -35 - Math.abs(-mouseX/50);
+
+
+				loadedObject.rotation.y = (Math.PI / 180)+.15;
+				
+				loadedObject.rotation.z =  (-mouseX - loadedObject.rotation.z )/500;			
+			
+				//camera.lookAt( scene.position );
+
+				renderer.render( scene, camera );
+
+			}
+
+			function play()
+				{
+				    var a = Math.random()*3;
+				    a=Math.floor(a);
+
+				    if(a==2)
+				    {
+
+						var audio = new Audio('music/Shigeto.mp3');
+						audio.play();
+ 
+				    }
+				    if(a==1)
+				    {
+
+				    	var audio = new Audio('music/North.mp3');
+						audio.play();
+
+					}
+
+				    if(a==0)
+				    {
+
+						var audio = new Audio('music/Queen.mp3');
+						audio.play();
+
+				    }
+				}
+
+			</script>
+
+
+	</body>
+</html>
