@@ -23,12 +23,12 @@
 			}
 			#info a, .button { color: #f00; font-weight: bold; text-decoration: underline; cursor: pointer }
 		</style>
-		    <script src="three.js"></script>
+		    <script src="https://github.com/indavisual/indaexperiments.git/three.js"></script>
 	</head>
 
 	<body>
 		
-		<script src="three.min.js"></script>
+		<script src="https://github.com/indavisual/indaexperiments.git/three.min.js"></script>
 		<script src="https://github.com/indavisual/indaexperiments.git/examples/js/loaders/OBJLoader.js"></script>
 		
 		<script src="https://github.com/indavisual/indaexperiments.git/examples/js/shaders/BleachBypassShader.js"></script>
@@ -65,11 +65,7 @@
 			var mouse = new THREE.Vector2();
 			
 			var geometry = new THREE.SphereGeometry( 100, 32, 16 );
-			
-	
 
-			
-			
 			init();
 			animate();
 
@@ -97,12 +93,7 @@
 				pointLight.position.set( 0, 0, 50 );
 
 				scene.add( pointLight );
-				
-				// var rimLight = new THREE.DirectionalLight( 0xfffff, 1 );
-				// rimLight.position.set( 0, 0, -1 );
-				
-				// scene.add( rimLight );
-							
+
 				//Texture
 
 				var manager = new THREE.LoadingManager();
@@ -127,7 +118,7 @@
 
 
 				var loader = new THREE.ImageLoader( manager );
-				loader.load( 'textures/Eye_DIF2.jpg', function ( image ) {
+				loader.load( 'https://github.com/indavisual/indaexperiments.git/textures/Eye_DIF2.jpg', function ( image ) {
 
 					texture.image = image;
 					texture.needsUpdate = true;
@@ -138,7 +129,7 @@
 				//Model
 
 				var loader = new THREE.OBJLoader( manager );
-				loader.load( 'obj/Eye.obj', function ( object ) {
+				loader.load( 'https://github.com/indavisual/indaexperiments.git/obj/Eye.obj', function ( object ) {
 
 					object.traverse( function ( child ) {
 
@@ -149,14 +140,11 @@
 						}
 
 					} );
-						//object.material = material;
-						//object.position.y = 32;
-						//object.position.x = -69;
+
 
 						object.scale.set (1.1, 1.1, 1.1);
 
 						object.rotation.x = Math.PI / 180 - .5;
-						//object.scale.set = (10, 10, 10);
 						loadedObject = object;
 						scene.add( object );
 
@@ -204,37 +192,17 @@
 
 			}
 
-
-			
 			function render() {
-			
-						//var mouse3D = new THREE.Vector3( ( event.clientX / window.innerWidth ) * 2 - 1, -( event.clientY / window.innerHeight ) * 2 + 1, 0.5 );              
-						//var mouse3D = new THREE.Vector3(200,-mouseY-200, -mouseX+300);
+
 						var mouse3D = new THREE.Vector3(mouseX/4, -mouseY/2, 200);
-						//var mouse3D = new THREE.Vector3(0,0,1);                                          
-			
-					// update the picking ray with the camera and mouse position	
-					//raycaster.setFromCamera( mouse, camera );
 
-					//loadedObject.rotation.y = mouseX/360 + 180.5;
-					//loadedObject.rotation.x = mouseY/360 + 0.8;
-
-					
-
-							//projector.unprojectVector( mouse3D, camera );   
-							//mouse3D.sub( loadedObject.position );                
-							//mouse3D.normalize();
-							
 							loadedObject.lookAt ( mouse3D );
 				
 				renderer.render( scene, camera );
 
 			}
-			
-			//window.addEventListener( 'mousemove', onMouseMove, false );
+		
 
-			//window.requestAnimationFrame(render);
-			
 			</script>
 
 	</body>
